@@ -2,19 +2,9 @@ import Foundation
 import CoreGraphics
 import AppKit
 
-func handleAppOpener(_ processArgs: [String]) {
-    print("Spawning process...")
-
-    let pathToScript = "/usr/bin/open"
-
-    let task = Process()
-    task.executableURL = URL(fileURLWithPath: pathToScript)
-    task.arguments = processArgs
-    try? task.run()
-}
-
 // Key codes
-let kF13: Int64 = 105           
+let kF13: Int64 = 105
+
 let kNumpadPlus: Int64  = 69 // Volume Up
 let kNumpadMinus: Int64 = 78 // Volume Down
 let kNumpadStar: Int64  = 67 // Play
@@ -44,12 +34,23 @@ let keyMap: [Int64: KeyAction] = [
     kNumpadEqual: .media(NX_KEYTYPE_PREVIOUS),
     kNumpadSlash: .media(NX_KEYTYPE_NEXT),
     kNumpadDot: .media(NX_KEYTYPE_MUTE),
-    kNumpad1: .app(["-a", "/Applications/Firefox.app", "-g", "http://gemini.google.com"])
+    kNumpad1: .app(["-a", "/Applications/Firefox.app", "-g", "http://simone.computer"])
 ]
 
 var modifierIsDown = false
 
 // CORE FUNCTIONS
+
+func handleAppOpener(_ processArgs: [String]) {
+    print("Spawning process...")
+
+    let pathToScript = "/usr/bin/open"
+
+    let task = Process()
+    task.executableURL = URL(fileURLWithPath: pathToScript)
+    task.arguments = processArgs
+    try? task.run()
+}
 
 func postMediaKey(key: UInt32) {
     // Assign it to a variable 'src'
@@ -131,7 +132,23 @@ guard let eventTap = CGEvent.tapCreate(
     callback: callback,
     userInfo: nil
 ) else {
-    print("FATAL ERROR: Accessibility permissions required.")
+    let app = NSApplication.shared
+    app.activate(ignoringOtherApps: true)
+
+    let alert = NSAlert()
+    alert.messageText = "Accessibility Permission Required"
+    alert.informativeText = "adbMediaControl needs Accessibility permission to capture global key events.\n\nOpen System Settings → Privacy & Security → Accessibility and add adbMediaControl.app."
+    alert.alertStyle = .warning
+    alert.addButton(withTitle: "Open Settings")
+    alert.addButton(withTitle: "Quit")
+
+    let response = alert.runModal()
+    if response == .alertFirstButtonReturn {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
     exit(1)
 }
 

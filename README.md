@@ -1,3 +1,3 @@
-`swiftc main.swift -o adbdriver && ./adbdriver`
-
 wip...
+
+just `./build.sh` for now
