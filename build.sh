@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APP_NAME="adbMediaControl.app"
+APP_NAME="ADB Media Control.app"
 ICON_FILE="AppIcon.icns"
 INFO_PLIST_FILE="Info.plist"
 BINARY_NAME="adbMediaControl"

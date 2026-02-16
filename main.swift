@@ -13,6 +13,16 @@ let kNumpadSlash: Int64 = 75 // Next Song
 let kNumpadDot: Int64 = 65   // dot sign
 let kNumpad1: Int64 = 83     // 1 numpad
 
+let kSlash: Int64 = 42 // acts as a left mouse click
+let kTick: Int64 = 50  // acts as a right mouse click
+
+let kArrowUp: Int64     = 126
+let kArrowDown: Int64   = 125
+let kArrowLeft: Int64   = 123
+let kArrowRight: Int64  = 124
+
+let mouseStep: CGFloat  = 20.0
+
 // macOS Media Key Constants
 let NX_KEYTYPE_SOUND_UP: UInt32   = 0
 let NX_KEYTYPE_SOUND_DOWN: UInt32 = 1
@@ -40,6 +50,36 @@ let keyMap: [Int64: KeyAction] = [
 var modifierIsDown = false
 
 // CORE FUNCTIONS
+
+func moveMouse(dx: CGFloat, dy: CGFloat) {
+    guard let event = CGEvent(source: nil) else { return }
+    var loc = event.location
+    loc.x += dx
+    loc.y += dy
+    
+    let moveEvent = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, 
+                            mouseCursorPosition: loc, mouseButton: .left)
+    moveEvent?.post(tap: .cghidEventTap)
+}
+
+func clickMouse(button: CGMouseButton, isDown: Bool) {
+    guard let event = CGEvent(source: nil) else { return }
+    let loc = event.location
+    
+    let type: CGEventType
+    switch button {
+    case .left:
+        type = isDown ? .leftMouseDown : .leftMouseUp
+    case .right:
+        type = isDown ? .rightMouseDown : .rightMouseUp
+    default:
+        type = isDown ? .leftMouseDown : .leftMouseUp
+    }
+    
+    let clickEvent = CGEvent(mouseEventSource: nil, mouseType: type, 
+                             mouseCursorPosition: loc, mouseButton: button)
+    clickEvent?.post(tap: .cghidEventTap)
+}
 
 func handleAppOpener(_ processArgs: [String]) {
     print("Spawning process...")
@@ -90,6 +130,7 @@ func postMediaKey(key: UInt32) {
 let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
     let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
 
+    // Handle Modifier (F13)
     if keyCode == kF13 {
         if type == .keyDown { modifierIsDown = true } 
         else if type == .keyUp { modifierIsDown = false }
@@ -97,23 +138,50 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
     }
 
     if modifierIsDown {
-        if type == .keyDown {
-            if let action = keyMap[keyCode] {
-                switch action {
-                case .media(let mediaKey):
-                    postMediaKey(key: mediaKey)
-                case .app(let args):
-                    DispatchQueue.global().async {
-                        handleAppOpener(args)
-                    }
-                }
-                return nil
+        // 1. Handle Mouse Click actions
+        if keyCode == kSlash {
+            if type == .keyDown {
+                clickMouse(button: .left, isDown: true)
+            } else if type == .keyUp {
+                clickMouse(button: .left, isDown: false)
             }
+            return nil
+        }
+
+        if keyCode == kTick {
+            if type == .keyDown {
+                clickMouse(button: .right, isDown: true)
+            } else if type == .keyUp {
+                clickMouse(button: .right, isDown: false)
+            }
+            return nil
+        }
+
+        // 2. Handle Mouse Movement (Arrows)
+        let isArrow = [kArrowUp, kArrowDown, kArrowLeft, kArrowRight].contains(keyCode)
+        
+        if type == .keyDown && isArrow {
+            let dx: CGFloat = (keyCode == kArrowRight ? mouseStep : (keyCode == kArrowLeft ? -mouseStep : 0))
+            let dy: CGFloat = (keyCode == kArrowDown ? mouseStep : (keyCode == kArrowUp ? -mouseStep : 0))
+            moveMouse(dx: dx, dy: dy)
+            return nil
+        }
+
+        // 3. Handle Media Keys / App Opener
+        if type == .keyDown, let action = keyMap[keyCode] {
+            switch action {
+            case .media(let mediaKey):
+                postMediaKey(key: mediaKey)
+            case .app(let args):
+                DispatchQueue.global().async {
+                    handleAppOpener(args)
+                }
+            }
+            return nil
         }
         
-        // Block the release of these keys too
-        let mediaKeys: [Int64] = [kNumpadPlus, kNumpadMinus, kNumpadStar, kNumpadEqual, kNumpadSlash]
-        if type == .keyUp && mediaKeys.contains(keyCode) {
+        // Swallow release of mapped keys
+        if type == .keyUp && (isArrow || keyMap.keys.contains(keyCode)) {
             return nil
         }
     }
