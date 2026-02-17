@@ -3,7 +3,7 @@ import CoreGraphics
 import AppKit
 
 // Key codes
-let kF13: Int64 = 105
+let kF13: Int64 = 9  // revert to F13 BEFORE MERGE
 
 let kNumpadPlus: Int64  = 69 // Volume Up
 let kNumpadMinus: Int64 = 78 // Volume Down
@@ -24,6 +24,7 @@ let kArrowLeft: Int64   = 123
 let kArrowRight: Int64  = 124
 
 let mouseStep: CGFloat  = 20.0
+var mouseDelta: CGFloat = 1.0
 
 // macOS Media Key Constants
 let NX_KEYTYPE_SOUND_UP: UInt32   = 0
@@ -52,6 +53,7 @@ let keyMap: [Int64: KeyAction] = [
 ]
 
 var modifierIsDown = false
+var pressedArrows: Set<Int64> = []
 
 // CORE FUNCTIONS
 
@@ -163,12 +165,36 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
 
         // 2. Handle Mouse Movement (Arrows)
         let isArrow = [kArrowUp, kArrowDown, kArrowLeft, kArrowRight].contains(keyCode)
-        
-        if type == .keyDown && isArrow {
-            let dx: CGFloat = (keyCode == kArrowRight ? mouseStep : (keyCode == kArrowLeft ? -mouseStep : 0))
-            let dy: CGFloat = (keyCode == kArrowDown ? mouseStep : (keyCode == kArrowUp ? -mouseStep : 0))
-            moveMouse(dx: dx, dy: dy)
-            return nil
+
+        if isArrow {
+            if type == .keyDown {
+                pressedArrows.insert(keyCode)
+                
+                if mouseDelta < 500 {
+                    mouseDelta += 5
+                }
+
+                let calcStep = mouseDelta + mouseStep
+
+                var dx: CGFloat = 0
+                var dy: CGFloat = 0
+
+                if pressedArrows.contains(kArrowRight) { dx += calcStep }
+                if pressedArrows.contains(kArrowLeft) { dx -= calcStep }
+
+                if pressedArrows.contains(kArrowDown) { dy += calcStep }
+                if pressedArrows.contains(kArrowUp) { dy -= calcStep }
+
+                moveMouse(dx: dx, dy: dy)
+                return nil
+            } else if type == .keyUp {
+                pressedArrows.remove(keyCode)
+
+                if pressedArrows.isEmpty {
+                    mouseDelta = 1.0
+                }
+                return nil
+            }
         }
 
         // 3. Handle Media Keys / App Opener
@@ -185,7 +211,7 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
         }
         
         // Swallow release of mapped keys
-        if type == .keyUp && (isArrow || keyMap.keys.contains(keyCode)) {
+        if type == .keyUp && (keyMap.keys.contains(keyCode)) {
             return nil
         }
     }
