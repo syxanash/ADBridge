@@ -171,10 +171,8 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
                 activeArrows.insert(keyCode)
                 if movementTimer == nil {
                     // 120Hz update for smooth movement
-                    DispatchQueue.main.async {
-                        movementTimer = Timer.scheduledTimer(withTimeInterval: 1.0/120.0, repeats: true) { _ in
-                            updateMouseLoop()
-                        }
+                    movementTimer = Timer.scheduledTimer(withTimeInterval: 1.0/120.0, repeats: true) { _ in
+                        updateMouseLoop()
                     }
                 }
             } else if type == .keyUp {
@@ -234,14 +232,9 @@ guard let eventTap = CGEvent.tapCreate(
     exit(1)
 }
 
-DispatchQueue.global(qos: .userInteractive).async {
-    let runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0)
-    
-    CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
-    CGEvent.tapEnable(tap: eventTap, enable: true)
-    
-    CFRunLoopRun() 
-}
+let runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0)
+CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
+CGEvent.tapEnable(tap: eventTap, enable: true)
 
 let app = NSApplication.shared
 DispatchQueue.main.async {
