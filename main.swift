@@ -40,10 +40,15 @@ let numsRows0: Int64 = 29
 let leftClick: Int64 = kNumpad0       // acts as a left mouse click
 let rightClick: Int64 = kNumpadEnter  // acts as a right mouse click
 
-let kArrowUp: Int64     = kNumpad8
-let kArrowDown: Int64   = kNumpad5
-let kArrowLeft: Int64   = kNumpad4
-let kArrowRight: Int64  = kNumpad6
+let kArrowUp: Int64     = kNumpad5
+let kArrowDown: Int64   = kNumpad2
+let kArrowLeft: Int64   = kNumpad1
+let kArrowRight: Int64  = kNumpad3
+
+let kScrollUp: Int64 = kNumpad7
+let kScrollDown: Int64 = kNumpad4
+let kScrollRight: Int64 = kNumpad9
+let kScrollLeft: Int64 = kNumpad8
 
 // Movement Physics
 let baseSpeed: CGFloat = 2.0       // Starting speed (pixels per frame)
@@ -117,7 +122,16 @@ var modifierIsDown = false
 var activeArrows: Set<Int64> = []
 var movementTimer: Timer?
 
+var activeScrolls: Set<Int64> = []
+var scrollTimer: Timer?
+let scrollSpeed: Int32 = 15
+
 // Core Functions
+
+func scrollMouse(dx: Int32, dy: Int32) {
+    let scrollEvent = CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 2, wheel1: dy, wheel2: dx, wheel3: 0)
+    scrollEvent?.post(tap: .cghidEventTap)
+}
 
 func moveMouse(dx: CGFloat, dy: CGFloat) {
     // Get current mouse location
@@ -245,7 +259,37 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
             return nil
         }
 
-        // 4. Handle Media/Apps
+        // 4. Handle Scrolling
+        let isScroll = [kScrollUp, kScrollDown, kScrollLeft, kScrollRight].contains(keyCode)
+        if isScroll {
+            if type == .keyDown {
+                activeScrolls.insert(keyCode)
+                if scrollTimer == nil {
+                    // scrolling at 60hz
+                    scrollTimer = Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { _ in
+                        var scrollDeltaY: Int32 = 0
+                        var scrollDeltaX: Int32 = 0
+                        if activeScrolls.contains(kScrollUp) { scrollDeltaY += scrollSpeed }
+                        if activeScrolls.contains(kScrollDown) { scrollDeltaY -= scrollSpeed }
+                        if activeScrolls.contains(kScrollRight) { scrollDeltaX -= scrollSpeed }
+                        if activeScrolls.contains(kScrollLeft) { scrollDeltaX += scrollSpeed }
+
+                        if scrollDeltaY != 0 || scrollDeltaX != 0 {
+                            scrollMouse(dx: scrollDeltaX, dy: scrollDeltaY)
+                        }
+                    }
+                }
+            } else if type == .keyUp {
+                activeScrolls.remove(keyCode)
+                if activeScrolls.isEmpty {
+                    scrollTimer?.invalidate()
+                    scrollTimer = nil
+                }
+            }
+            return nil
+        }
+
+        // 5. Handle Media/Apps
         if type == .keyDown, let action = keyMap[keyCode] {
             switch action {
             case .media(let m): postMediaKey(key: m)
