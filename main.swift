@@ -2,14 +2,17 @@ import Foundation
 import CoreGraphics
 import AppKit
 
-// Constants & Key Codes
+// Modifier Key F13
 let kF13: Int64 = 105
+
+// Numpad Key Codes
 let kNumpadPlus: Int64  = 69
 let kNumpadMinus: Int64 = 78
 let kNumpadStar: Int64  = 67
 let kNumpadEqual: Int64 = 81
 let kNumpadSlash: Int64 = 75
 let kNumpadDot: Int64 = 65
+let kNumpad0: Int64 = 82
 let kNumpad1: Int64 = 83
 let kNumpad2: Int64 = 84
 let kNumpad3: Int64 = 85
@@ -19,14 +22,28 @@ let kNumpad6: Int64 = 88
 let kNumpad7: Int64 = 89
 let kNumpad8: Int64 = 91
 let kNumpad9: Int64 = 92
+let kNumpadEnter: Int64 = 76
 
-let kSlash: Int64 = 42 // acts as a left mouse click
-let kTick: Int64 = 50  // acts as a right mouse click
+// Numbers row
+let numsRows1: Int64 = 18
+let numsRows2: Int64 = 19
+let numsRows3: Int64 = 20
+let numsRows4: Int64 = 21
+let numsRows5: Int64 = 23
+let numsRows6: Int64 = 22
+let numsRows7: Int64 = 26
+let numsRows8: Int64 = 28
+let numsRows9: Int64 = 25
+let numsRows0: Int64 = 29
 
-let kArrowUp: Int64     = 126
-let kArrowDown: Int64   = 125
-let kArrowLeft: Int64   = 123
-let kArrowRight: Int64  = 124
+// Mouse Controls
+let leftClick: Int64 = kNumpad0       // acts as a left mouse click
+let rightClick: Int64 = kNumpadEnter  // acts as a right mouse click
+
+let kArrowUp: Int64     = kNumpad8
+let kArrowDown: Int64   = kNumpad5
+let kArrowLeft: Int64   = kNumpad4
+let kArrowRight: Int64  = kNumpad6
 
 // Movement Physics
 let baseSpeed: CGFloat = 2.0       // Starting speed (pixels per frame)
@@ -42,20 +59,21 @@ let NX_KEYTYPE_PLAY: UInt32       = 16
 let NX_KEYTYPE_NEXT: UInt32       = 17
 let NX_KEYTYPE_PREVIOUS: UInt32   = 18
 
+let configFile: String = "Documents/adbridgeConfig.json"
+
 enum KeyAction {
     case media(UInt32)
     case app([String])
 }
 
-// Config — lives at ~/Documents/adbMediaControl.json
 let configURL = FileManager.default.homeDirectoryForCurrentUser
-    .appendingPathComponent("Documents/adbMediaControl.json")
+    .appendingPathComponent(configFile)
 
 func createDefaultConfigIfNeeded() {
     guard !FileManager.default.fileExists(atPath: configURL.path) else { return }
     let template = """
     {
-      "numpad1": "-a /Applications/Firefox.app https://simone.computer",
+      "num1": "-a /Applications/Firefox.app https://simone.computer",
     }
     """
     try? template.write(to: configURL, atomically: true, encoding: .utf8)
@@ -82,9 +100,9 @@ let keyMap: [Int64: KeyAction] = {
         kNumpadDot: .media(NX_KEYTYPE_MUTE),
     ]
     let numpadKeyCodes: [String: Int64] = [
-        "numpad1": kNumpad1, "numpad2": kNumpad2, "numpad3": kNumpad3,
-        "numpad4": kNumpad4, "numpad5": kNumpad5, "numpad6": kNumpad6,
-        "numpad7": kNumpad7, "numpad8": kNumpad8, "numpad9": kNumpad9,
+        "num1": numsRows1, "num2": numsRows2, "num3": numsRows3,
+        "num4": numsRows4, "num5": numsRows5, "num6": numsRows6,
+        "num7": numsRows7, "num8": numsRows8, "num9": numsRows9,
     ]
     for (key, args) in config {
         if let keyCode = numpadKeyCodes[key] {
@@ -196,11 +214,11 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
 
     if modifierIsDown {
         // 2. Handle Clicks
-        if keyCode == kSlash {
+        if keyCode == leftClick {
             clickMouse(button: .left, isDown: (type == .keyDown))
             return nil
         }
-        if keyCode == kTick {
+        if keyCode == rightClick {
             clickMouse(button: .right, isDown: (type == .keyDown))
             return nil
         }
@@ -284,7 +302,7 @@ DispatchQueue.main.async {
     
     let alert = NSAlert()
     alert.messageText = "ADBridge is running"
-    alert.informativeText = "Running in the background.\n\nTo configure app shortcut keys, edit:\n~/Documents/adbMediaControl.json"
+    alert.informativeText = "Running in the background.\n\nTo configure app shortcut keys, edit:\n~\(configFile)"
     alert.alertStyle = .informational
     alert.addButton(withTitle: "Open Config File")
     alert.addButton(withTitle: "Close")
