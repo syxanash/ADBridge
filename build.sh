@@ -4,12 +4,12 @@ APP_NAME="ADBridge.app"
 ICON_FILE="AppIcon.icns"
 INFO_PLIST_FILE="Info.plist"
 BINARY_NAME="adbridge"
-SOURCE_FILE="main.swift"
+SOURCE_FILES="main.swift constants.swift"
 
 killall "$BINARY_NAME" 2>/dev/null
 
 echo "🔨 Building $APP_NAME ..."
-swiftc "$SOURCE_FILE" -o "$BINARY_NAME"
+swiftc $SOURCE_FILES -o "$BINARY_NAME"
 
 mkdir -p "$APP_NAME/Contents/MacOS"
 mkdir -p "$APP_NAME/Contents/Resources"

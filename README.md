@@ -2,4 +2,4 @@ wip...
 
 just `./build.sh` for now
 
-debug with `swiftc main.swift -o adbridge && ./adbridge`
+debug with `swiftc *.swift -o adbridge && ./adbridge`
