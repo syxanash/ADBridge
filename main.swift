@@ -56,6 +56,12 @@ let acceleration: CGFloat = 0.4    // How fast it speeds up
 let maxSpeed: CGFloat = 22.0       // Maximum velocity
 var currentVelocity: CGFloat = 0.0
 
+// Scroll Physics
+let scrollBaseSpeed: CGFloat = 3.0
+let scrollAcceleration: CGFloat = 0.8
+let scrollMaxSpeed: CGFloat = 30.0
+var scrollVelocity: CGFloat = 0.0
+
 // macOS Media Key Constants
 let NX_KEYTYPE_SOUND_UP: UInt32   = 0
 let NX_KEYTYPE_SOUND_DOWN: UInt32 = 1
@@ -125,10 +131,11 @@ var movementTimer: Timer?
 
 var activeScrolls: Set<Int64> = []
 var scrollTimer: Timer?
-let scrollSpeed: Int32 = 15
 
 var lastClickTime: TimeInterval = 0
 var clickCount: Int64 = 1
+var leftClickIsDown = false
+var rightClickIsDown = false
 
 // Core Functions
 
@@ -171,6 +178,28 @@ func updateMouseLoop() {
     if activeArrows.contains(kArrowUp)    { dy -= step }
 
     moveMouse(dx: dx, dy: dy)
+}
+
+func updateScrollLoop() {
+    guard !activeScrolls.isEmpty else {
+        scrollVelocity = 0
+        return
+    }
+
+    if scrollVelocity < scrollMaxSpeed {
+        scrollVelocity += scrollAcceleration
+    }
+
+    let step = Int32(scrollBaseSpeed + scrollVelocity)
+    var scrollDeltaY: Int32 = 0
+    var scrollDeltaX: Int32 = 0
+
+    if activeScrolls.contains(kScrollUp)    { scrollDeltaY += step }
+    if activeScrolls.contains(kScrollDown)  { scrollDeltaY -= step }
+    if activeScrolls.contains(kScrollRight) { scrollDeltaX -= step }
+    if activeScrolls.contains(kScrollLeft)  { scrollDeltaX += step }
+
+    scrollMouse(dx: scrollDeltaX, dy: scrollDeltaY)
 }
 
 func clickMouse(button: CGMouseButton, isDown: Bool) {
@@ -247,6 +276,16 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
             activeScrolls.removeAll()
             scrollTimer?.invalidate()
             scrollTimer = nil
+            scrollVelocity = 0
+
+            if leftClickIsDown {
+                leftClickIsDown = false
+                clickMouse(button: .left, isDown: false)
+            }
+            if rightClickIsDown {
+                rightClickIsDown = false
+                clickMouse(button: .right, isDown: false)
+            }
         }
         return nil 
     }
@@ -254,10 +293,12 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
     if modifierIsDown {
         // 2. Handle Clicks
         if keyCode == leftClick {
+            leftClickIsDown = (type == .keyDown)
             clickMouse(button: .left, isDown: (type == .keyDown))
             return nil
         }
         if keyCode == rightClick {
+            rightClickIsDown = (type == .keyDown)
             clickMouse(button: .right, isDown: (type == .keyDown))
             return nil
         }
@@ -290,18 +331,8 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
             if type == .keyDown {
                 activeScrolls.insert(keyCode)
                 if scrollTimer == nil {
-                    // scrolling at 60hz
                     scrollTimer = Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { _ in
-                        var scrollDeltaY: Int32 = 0
-                        var scrollDeltaX: Int32 = 0
-                        if activeScrolls.contains(kScrollUp) { scrollDeltaY += scrollSpeed }
-                        if activeScrolls.contains(kScrollDown) { scrollDeltaY -= scrollSpeed }
-                        if activeScrolls.contains(kScrollRight) { scrollDeltaX -= scrollSpeed }
-                        if activeScrolls.contains(kScrollLeft) { scrollDeltaX += scrollSpeed }
-
-                        if scrollDeltaY != 0 || scrollDeltaX != 0 {
-                            scrollMouse(dx: scrollDeltaX, dy: scrollDeltaY)
-                        }
+                        updateScrollLoop()
                     }
                 }
             } else if type == .keyUp {
@@ -309,6 +340,7 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
                 if activeScrolls.isEmpty {
                     scrollTimer?.invalidate()
                     scrollTimer = nil
+                    scrollVelocity = 0
                 }
             }
             return nil
