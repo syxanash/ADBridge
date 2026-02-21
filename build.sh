@@ -2,6 +2,7 @@
 
 APP_NAME="ADBridge.app"
 ICON_FILE="AppIcon.icns"
+MENU_ICON="triangle.png"
 INFO_PLIST_FILE="Info.plist"
 BINARY_NAME="adbridge"
 SOURCE_FILES="main.swift constants.swift"
@@ -16,6 +17,7 @@ mkdir -p "$APP_NAME/Contents/Resources"
 
 mv "$BINARY_NAME" "$APP_NAME/Contents/MacOS/$BINARY_NAME"
 cp "assets/$ICON_FILE" "$APP_NAME/Contents/Resources/$ICON_FILE"
+cp "assets/$MENU_ICON" "$APP_NAME/Contents/Resources/$MENU_ICON"
 cp "assets/$INFO_PLIST_FILE" "$APP_NAME/Contents/$INFO_PLIST_FILE"
 chmod +x "$APP_NAME/Contents/MacOS/$BINARY_NAME"
 

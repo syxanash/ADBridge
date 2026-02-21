@@ -92,6 +92,8 @@ var movementTimer: Timer?
 var activeScrolls: Set<Int64> = []
 var scrollTimer: Timer?
 
+var statusItem: NSStatusItem?
+
 var lastClickTime: TimeInterval = 0
 var clickCount: Int64 = 1
 var leftClickIsDown = false
@@ -399,7 +401,24 @@ let app = NSApplication.shared
 DispatchQueue.main.async {
     NSApp.setActivationPolicy(.accessory)
     NSApp.activate()
-    
+
+    statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+    if let button = statusItem?.button {
+        if let image = NSImage(contentsOfFile: Bundle.main.resourcePath! + "/triangle.png") {
+            image.isTemplate = true
+            button.image = image
+        } else {
+            button.image = NSImage(systemSymbolName: "keyboard", accessibilityDescription: "ADBridge")
+            button.image?.isTemplate = true
+        }
+    }
+
+    let menu = NSMenu()
+    let quitItem = NSMenuItem(title: "Quit ADBridge", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+    quitItem.target = NSApp
+    menu.addItem(quitItem)
+    statusItem?.menu = menu
+
     let alert = NSAlert()
     alert.messageText = "ADBridge is running"
     alert.informativeText = "Running in the background.\n\nTo configure app shortcut keys, edit:\n~\(configFile)"
