@@ -102,6 +102,18 @@ var middleClickIsDown = false
 
 // Core Functions
 
+func setStatusIcon(filled: Bool) {
+    guard let button = statusItem?.button else { return }
+    let name = filled ? "triangle-fill.png" : "triangle.png"
+    if let image = NSImage(contentsOfFile: Bundle.main.resourcePath! + "/" + name) {
+        image.isTemplate = true
+        button.image = image
+    } else {
+        button.image = NSImage(systemSymbolName: "keyboard", accessibilityDescription: "ADBridge")
+        button.image?.isTemplate = true
+    }
+}
+
 func scrollMouse(dx: Int32, dy: Int32) {
     let scrollEvent = CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 2, wheel1: dy, wheel2: dx, wheel3: 0)
     scrollEvent?.post(tap: .cghidEventTap)
@@ -257,9 +269,14 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
 
     // 1. Handle Modifier
     if keyCode == modifierKey {
-        if type == .keyDown { modifierIsDown = true } 
-        else if type == .keyUp { 
+        if type == .keyDown {
+            modifierIsDown = true
+            DispatchQueue.main.async { setStatusIcon(filled: true) }
+        } else if type == .keyUp {
             modifierIsDown = false
+
+            DispatchQueue.main.async { setStatusIcon(filled: false) }
+
             activeArrows.removeAll()
             movementTimer?.invalidate()
             movementTimer = nil
@@ -403,15 +420,7 @@ DispatchQueue.main.async {
     NSApp.activate()
 
     statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-    if let button = statusItem?.button {
-        if let image = NSImage(contentsOfFile: Bundle.main.resourcePath! + "/triangle.png") {
-            image.isTemplate = true
-            button.image = image
-        } else {
-            button.image = NSImage(systemSymbolName: "keyboard", accessibilityDescription: "ADBridge")
-            button.image?.isTemplate = true
-        }
-    }
+    setStatusIcon(filled: false)
 
     let menu = NSMenu()
     let quitItem = NSMenuItem(title: "Quit ADBridge", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")

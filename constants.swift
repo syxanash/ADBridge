@@ -1,6 +1,7 @@
 import CoreGraphics
 
-// Key F13
+// Function Keys
+let kF1: Int64  = 122
 let kF13: Int64 = 105
 
 // Numpad Key Codes
