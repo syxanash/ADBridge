@@ -100,6 +100,8 @@ var leftClickIsDown = false
 var rightClickIsDown = false
 var middleClickIsDown = false
 
+var cachedDisplayBounds: [CGRect] = getDisplayBounds()
+
 // Core Functions
 
 func setStatusIcon(filled: Bool) {
@@ -150,7 +152,7 @@ func moveMouse(dx: CGFloat, dy: CGFloat) {
     guard let loc = dummyEvent?.location else { return }
 
     let rawLoc = CGPoint(x: loc.x + dx, y: loc.y + dy)
-    let newLoc = clampToDisplays(rawLoc, displays: getDisplayBounds())
+    let newLoc = clampToDisplays(rawLoc, displays: cachedDisplayBounds)
 
     let moveEvent = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved,
                             mouseCursorPosition: newLoc, mouseButton: .left)
@@ -421,6 +423,11 @@ DispatchQueue.main.async {
 
     statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     setStatusIcon(filled: false)
+
+    NotificationCenter.default.addObserver(forName: NSApplication.didChangeScreenParametersNotification,
+                                           object: nil, queue: .main) { _ in
+        cachedDisplayBounds = getDisplayBounds()
+    }
 
     let menu = NSMenu()
     let quitItem = NSMenuItem(title: "Quit ADBridge", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
