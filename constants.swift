@@ -2,6 +2,17 @@ import CoreGraphics
 
 // Function Keys
 let kF1: Int64  = 122
+let kF2: Int64  = 120
+let kF3: Int64  = 99
+let kF4: Int64  = 118
+let kF5: Int64  = 96
+let kF6: Int64  = 97
+let kF7: Int64  = 98
+let kF8: Int64  = 100
+let kF9: Int64  = 101
+let kF10: Int64 = 109
+let kF11: Int64 = 103
+let kF12: Int64 = 111
 let kF13: Int64 = 105
 
 // Numpad Key Codes
