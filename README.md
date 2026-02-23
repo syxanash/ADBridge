@@ -4,7 +4,7 @@
 
 ## Requirements
 
-You need to be able to configure the key mapping of your ADB to USB converter. The Apple IIGS Keyboard [converter](https://www.bigmessowires.com/usb-wombat/) I used was configured to map the Power Key <kbd>◁&nbsp;&nbsp;&nbsp;</kbd> to <kbd>F13</kbd>. This will be needed to use the function key as a modifier to use the extra shortcuts provided by ADBridge. You can easily change the line `let modifierKey: Int64 = kF13` in the source code `constants.swift` to point to your preferred function key.
+You need to be able to configure the key mapping of your ADB to USB converter. The Apple IIGS Keyboard [converter](https://www.bigmessowires.com/usb-wombat/) I used was configured to map the Power Key <kbd>◁&nbsp;&nbsp;&nbsp;</kbd> to <kbd>F13</kbd>. This will be needed to use the function key as a modifier to use the extra shortcuts provided by ADBridge. You can easily change the line `let modifierKey: Int64 = kF13` in the `main.swift` and point your preferred function key from `constants.swift`.
 
 ## Shortcuts
 
