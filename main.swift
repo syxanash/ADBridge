@@ -389,12 +389,6 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
             case .media(let m): postMediaKey(key: m)
             case .app(let a): DispatchQueue.global().async { handleAppOpener(a) }
             }
-            // Disable toggle after any media/app action, except:
-            // - Mission Control (toggle stays on by design)
-            // - F13 is still held (hold mode, user may press more keys sequentially)
-            if keyCode != kNumpad6 && !modifierIsHeld {
-                deactivateToggle()
-            }
             return nil
         }
         
