@@ -112,7 +112,7 @@ var cachedDisplayBounds: [CGRect] = getDisplayBounds()
 func setStatusIcon(filled: Bool) {
     guard let button = statusItem?.button else { return }
     let name = filled ? "triangle-fill.png" : "triangle.png"
-    if let image = NSImage(contentsOfFile: "app-assets/" + name) {
+    if let image = NSImage(contentsOfFile: Bundle.main.resourcePath! + "/" + name) {
         image.isTemplate = true
         button.image = image
     } else {
