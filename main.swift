@@ -389,21 +389,16 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
         }
 
         // 5. Handle Media/Apps
-        if type == .keyDown, let action = keyMap[keyCode] {
-            // Suppress number row app shortcuts if the mouse was moved during this toggle session
+        if keyMap.keys.contains(keyCode) {
+            // Pass through number row keys if the mouse was used (let them type normally)
             if mouseHasMovedWhileToggled && numberRowKeys.contains(keyCode) {
                 return Unmanaged.passUnretained(event)
             }
-            switch action {
-            case .media(let m): postMediaKey(key: m)
-            case .app(let a): DispatchQueue.global().async { handleAppOpener(a) }
-            }
-            return nil
-        }
-        
-        if type == .keyUp && keyMap.keys.contains(keyCode) {
-            if mouseHasMovedWhileToggled && numberRowKeys.contains(keyCode) {
-                return Unmanaged.passUnretained(event)
+            if type == .keyDown, let action = keyMap[keyCode] {
+                switch action {
+                case .media(let m): postMediaKey(key: m)
+                case .app(let a): DispatchQueue.global().async { handleAppOpener(a) }
+                }
             }
             return nil
         }
