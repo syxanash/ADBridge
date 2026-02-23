@@ -13,6 +13,17 @@ ADBridge will provide the following keyboard shortcuts by default:
 
 ![keyboard mapping diagram](repo-assets/keyboard-map.png)
 
+## UI
+
+ADBridge can act as a toggle (press the Power Key once briefly) and then you can use the mouse from the numpad or the media keys. Alternatively just combine the Power Key + the media commands and app shortcut to activate it once without triggering the mouse button from the numpad.
+
+![enabled](repo-assets/enabled.png)
+![disabled](repo-assets/disabled.png)
+
+You can quit the app by clicking the Triangle menu icon:
+
+![quit](repo-assets/menubar.png)
+
 ## Setup and Installation
 
 ### 1. Clone the repository
@@ -58,7 +69,3 @@ By default ADBridge creates a config file `~/Documents/adbridgeConfig.json`. The
 ```
 
 Each "num" on the number row can be configured to open an Application (similar to a macOS Dock).
-
-You can quit ADBridge by clicking on the triangle icon on the menu bar:
-
-![menu bar](repo-assets/menubar.png)

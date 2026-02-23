@@ -89,6 +89,8 @@ var toggleActive = false
 var modifierIsHeld = false
 var modifierPressTime: TimeInterval = 0
 let modifierHoldThreshold: TimeInterval = 0.4   // seconds; >= this → hold mode, < this → toggle mode
+var mouseHasMovedWhileToggled = false
+let numberRowKeys: Set<Int64> = [numsRows1, numsRows2, numsRows3, numsRows4, numsRows5, numsRows6, numsRows7, numsRows8, numsRows9]
 var activeArrows: Set<Int64> = []
 var movementTimer: Timer?
 
@@ -270,6 +272,7 @@ func postMediaKey(key: UInt32) {
 func deactivateToggle() {
     toggleActive = false
     modifierIsHeld = false
+    mouseHasMovedWhileToggled = false
     DispatchQueue.main.async { setStatusIcon(filled: false) }
 
     activeArrows.removeAll()
@@ -309,6 +312,7 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
                 deactivateToggle()
             } else {
                 toggleActive = true
+                mouseHasMovedWhileToggled = false
                 modifierPressTime = Date().timeIntervalSince1970
                 DispatchQueue.main.async { setStatusIcon(filled: true) }
             }
@@ -344,6 +348,7 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
         let isArrow = [kArrowUp, kArrowDown, kArrowLeft, kArrowRight].contains(keyCode)
         if isArrow {
             if type == .keyDown {
+                mouseHasMovedWhileToggled = true
                 activeArrows.insert(keyCode)
                 if movementTimer == nil {
                     // 120Hz update for smooth movement
@@ -385,6 +390,10 @@ let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
 
         // 5. Handle Media/Apps
         if type == .keyDown, let action = keyMap[keyCode] {
+            // Suppress number row app shortcuts if the mouse was moved during this toggle session
+            if mouseHasMovedWhileToggled && numberRowKeys.contains(keyCode) {
+                return Unmanaged.passUnretained(event)
+            }
             switch action {
             case .media(let m): postMediaKey(key: m)
             case .app(let a): DispatchQueue.global().async { handleAppOpener(a) }
