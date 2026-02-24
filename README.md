@@ -62,9 +62,9 @@ By default ADBridge creates a config file `~/Documents/adbridgeConfig.json`. The
 {
   "num1": "-a /System/Applications/Utilities/Terminal.app",
   "num2": "-a /Applications/Firefox.app,
-  "num4": "-a /Applications/Spotify.app",
-  "num5": "-a /Applications/WhatsApp.app",
-  "num6": "-a /Applications/Telegram.app"
+  "num3": "-a /Applications/Spotify.app",
+  "num4": "-a /Applications/WhatsApp.app",
+  "num5": "-a /Applications/Telegram.app"
 }
 ```
 
