@@ -2,7 +2,7 @@
 
 <img src='repo-assets/icon.png' alt='app icon' style='height: 150px'><br>
 
-This is a lightweight background utility that allows you to use your Numpad as a mouse while also providing media controls (play/pause, next/prev track, and volume) directly from the keys. Originally designed for the Apple IIGS keyboard, it is compatible with any keyboard that features a Numpad.
+This is a lightweight background utility that allows you to use your Numpad as a mouse while also providing media controls (play/pause, next/prev track, and volume) directly from the keys. Originally designed for the Apple IIGS keyboard, **it is compatible with any keyboard that features a Numpad**.
 
 ## Requirements
 
