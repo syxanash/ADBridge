@@ -23,15 +23,25 @@ let kScrollLeft: Int64 = kNumpad8
 
 // Movement Physics
 let baseSpeed: CGFloat = 2.0       // Starting speed (pixels per frame)
-let acceleration: CGFloat = 0.4    // How fast it speeds up
-let maxSpeed: CGFloat = 22.0       // Maximum velocity
+let accelerationDefault: CGFloat = 0.3
+let maxSpeedDefault: CGFloat = 15.0
+let accelerationBoost: CGFloat = 1
+let maxSpeedBoost: CGFloat = 30.0
+
+var acceleration: CGFloat = accelerationDefault   // How fast it speeds up
+var maxSpeed: CGFloat = maxSpeedDefault           // Maximum velocity
 var currentVelocity: CGFloat = 0.0
 
 // Scroll Physics
 let scrollBaseSpeed: CGFloat = 3.0
-let scrollAcceleration: CGFloat = 0.8
-let scrollMaxSpeed: CGFloat = 30.0
+let scrollAccelerationDefault: CGFloat = 0.5
+let scrollAccelerationBoost: CGFloat = 2.0
+let scrollMaxSpeedDefault: CGFloat = 20.0
+let scrollMaxSpeedBoost: CGFloat = 150.0
+
 var scrollVelocity: CGFloat = 0.0
+var scrollMaxSpeed: CGFloat = scrollMaxSpeedDefault
+var scrollAcceleration: CGFloat = scrollAccelerationDefault
 
 enum KeyAction {
     case media(UInt32)
@@ -88,6 +98,7 @@ let keyMap: [Int64: KeyAction] = {
 // State Management
 var toggleActive = false
 var modifierIsHeld = false
+var boostActive = false
 var modifierPressTime: TimeInterval = 0
 let modifierHoldThreshold: TimeInterval = 0.2   // seconds; >= this → hold mode, < this → toggle mode
 let numberRowKeys: Set<Int64> = [numsRows0, numsRows1, numsRows2, numsRows3, numsRows4, numsRows5, numsRows6, numsRows7, numsRows8, numsRows9]
@@ -304,6 +315,28 @@ func deactivateToggle() {
 
 let callback: CGEventTapCallBack = { (proxy, type, event, refcon) in
     let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+
+    let shiftIsHeld = event.flags.contains(.maskShift)
+
+    if shiftIsHeld != boostActive {
+        boostActive = shiftIsHeld
+        currentVelocity = 0
+        scrollVelocity = 0
+    }
+
+    if shiftIsHeld {
+        scrollAcceleration = scrollAccelerationBoost
+        scrollMaxSpeed = scrollMaxSpeedBoost
+
+        acceleration = accelerationBoost
+        maxSpeed = maxSpeedBoost
+    } else {
+        scrollAcceleration = scrollAccelerationDefault
+        scrollMaxSpeed = scrollMaxSpeedDefault
+
+        acceleration = accelerationDefault
+        maxSpeed = maxSpeedDefault
+    }
 
     // 1. Handle Modifier - quick tap toggles, hold deactivates on release
     if keyCode == modifierKey {
