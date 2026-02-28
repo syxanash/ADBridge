@@ -16,7 +16,7 @@ ADBridge will provide the following keyboard shortcuts by default:
 
 ## UI
 
-ADBridge can act as a toggle (press the Power Key once briefly) and then you can use the mouse from the numpad or the media keys. Alternatively just combine the Power Key + the media commands and app shortcut to activate it once without triggering the mouse button from the numpad.
+ADBridge can act as a toggle (press the Power Key once briefly) and then you can use the mouse from the numpad or the media keys. Alternatively just combine the Power Key + the media commands and app shortcut to activate it once without triggering the mouse movement feature from the numpad.
 
 ![enabled](repo-assets/enabled.png)
 ![disabled](repo-assets/disabled.png)
