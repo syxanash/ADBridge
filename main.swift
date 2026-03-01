@@ -172,7 +172,18 @@ func moveMouse(dx: CGFloat, dy: CGFloat) {
     let rawLoc = CGPoint(x: loc.x + dx, y: loc.y + dy)
     let newLoc = clampToDisplays(rawLoc, displays: cachedDisplayBounds)
 
-    let moveEvent = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved,
+    let moveType: CGEventType
+    if leftClickIsDown {
+        moveType = .leftMouseDragged
+    } else if rightClickIsDown {
+        moveType = .rightMouseDragged
+    } else if middleClickIsDown {
+        moveType = .otherMouseDragged
+    } else {
+        moveType = .mouseMoved
+    }
+
+    let moveEvent = CGEvent(mouseEventSource: nil, mouseType: moveType,
                             mouseCursorPosition: newLoc, mouseButton: .left)
     moveEvent?.post(tap: .cghidEventTap)
 }
