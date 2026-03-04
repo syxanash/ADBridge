@@ -642,6 +642,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 if !modifierIsHeld && numberRowKeys.contains(keyCode) {
                     return Unmanaged.passUnretained(event)
                 }
+                if case .app = action, keyCode == kNumpad6, !mouseFromKeypadEnabled {
+                    return Unmanaged.passUnretained(event)
+                }
                 if type == .keyDown {
                     switch action {
                     case .media(let m):
@@ -650,7 +653,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     case .app(let a):
                         if modifierPressedWhileActive { modifierUsedForAction = true }
                         if keyCode == kNumpad6 {
-                            if mouseFromKeypadEnabled { DispatchQueue.global().async { handleAppOpener(a) } } else { return Unmanaged.passUnretained(event) }
+                            DispatchQueue.global().async { handleAppOpener(a) }
                         } else if appShortcutEnabled {
                             showAppToast(name: appDisplayName(from: a))
                             DispatchQueue.global().async { handleAppOpener(a) }
