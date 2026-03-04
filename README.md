@@ -66,7 +66,15 @@ By default ADBridge creates a config file `~/Documents/adbridgeConfig.json`. The
   "num3": "-a /Applications/Spotify.app",
   "num4": "-a /Applications/WhatsApp.app",
   "num5": "-a /Applications/Telegram.app"
+  "appShortcut" : true,
+  "mediaKeys" : true,
+  "mouseKeypad" : true
 }
 ```
 
 Each "num" on the number row can be configured to open an Application (similar to a macOS Dock).
+You can enable or disable the following mapping features:
+
+* App shortcuts from the number row
+* Media keys using: `= / * + -`
+* Mouse movement from the keypad (move up, down, left, and right using 5, 2, 1, and 3; horizontal and vertical scroll with 8, 9, 7, and 4; and clicks using 0, ., and Enter)
