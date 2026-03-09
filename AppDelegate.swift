@@ -29,6 +29,8 @@ private let accelerationDefault: CGFloat  = 0.3
 private let maxSpeedDefault: CGFloat      = 15.0
 private let accelerationBoost: CGFloat    = 1.0
 private let maxSpeedBoost: CGFloat        = 30.0
+private let accelerationSlow: CGFloat     = 0.1
+private let maxSpeedSlow: CGFloat         = 0.3
 
 private let scrollBaseSpeed: CGFloat          = 3.0
 private let scrollAccelerationDefault: CGFloat = 0.5
@@ -96,6 +98,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var modifierPressedWhileActive = false
     var modifierUsedForAction = false
     var boostActive = false
+    var slowDownActive = false
     var modifierPressTime: TimeInterval = 0
 
     var acceleration: CGFloat  = accelerationDefault
@@ -523,8 +526,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         clickEvent?.post(tap: .cghidEventTap)
     }
 
-    // MARK: Event Handling
-
     func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             if let tap = eventTap { CGEvent.tapEnable(tap: tap, enable: true) }
@@ -532,7 +533,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+
+        // MARK: Speed modifier
+
         let shiftIsHeld = event.flags.contains(.maskShift)
+        let optionIsHeld = event.flags.contains(.maskAlternate)
+
+        if optionIsHeld != slowDownActive {
+            slowDownActive = optionIsHeld
+            currentVelocity = 0
+            scrollVelocity = 0
+        }
 
         if shiftIsHeld != boostActive {
             boostActive = shiftIsHeld
@@ -540,7 +551,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             scrollVelocity = 0
         }
 
-        if shiftIsHeld {
+        if optionIsHeld {
+            scrollAcceleration = scrollAccelerationDefault
+            scrollMaxSpeed = scrollMaxSpeedDefault
+            acceleration = accelerationSlow
+            maxSpeed = maxSpeedSlow
+        } else if shiftIsHeld {
             scrollAcceleration = scrollAccelerationBoost
             scrollMaxSpeed = scrollMaxSpeedBoost
             acceleration = accelerationBoost
@@ -551,6 +567,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             acceleration = accelerationDefault
             maxSpeed = maxSpeedDefault
         }
+
+         // MARK: Event Handling
 
         // 1. Handle Modifier - quick tap toggles, hold deactivates on release
         if keyCode == modifierKey {
