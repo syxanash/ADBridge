@@ -537,7 +537,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // MARK: Speed modifier
 
         let shiftIsHeld = event.flags.contains(.maskShift)
-        let optionIsHeld = event.flags.contains(.maskAlternate)
+        let optionIsHeld = event.flags.contains(.maskCommand)
 
         if optionIsHeld != slowDownActive {
             slowDownActive = optionIsHeld
